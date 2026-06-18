@@ -1,0 +1,61 @@
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+
+    configs:
+      - source: hermes_config
+        target: /opt/data/config.yaml
+        mode: 0444
+
+    ports:
+      - "8642:8642"   # Gateway API
+      - "9119:9119"   # Dashboard
+
+    volumes:
+      - ./hermes_data:/opt/data
+
+    environment:
+      # Dashboard
+      - HERMES_DASHBOARD=1
+      - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=${HERMES_ADMIN_USER}
+      - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_ADMIN_PASSWORD}
+      - HERMES_DASHBOARD_BASIC_AUTH_SECRET=${HERMES_ADMIN_RAND}
+
+      # Providers
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+
+      # Telegram
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS}
+      - TELEGRAM_GROUP_ALLOWED_CHATS=${TELEGRAM_GROUP_ALLOWED_CHATS}
+
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+
+configs:
+  hermes_config:
+    content: |
+      model:
+        provider: openai-api
+        default: gpt-5.5
+
+      fallback_providers:
+        - provider: huggingface
+          model: "Qwen/Qwen3.5-397B-A17B"
+
+      gateway:
+        platforms:
+          telegram:
+            enabled: true
+            extra:
+              require_mention: true
+              exclusive_bot_mentions: true
+              rich_messages: true
+              disable_link_previews: true

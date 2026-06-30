@@ -46,10 +46,6 @@ configs:
         provider: openai-api
         default: gpt-5.5
 
-      fallback_providers:
-        - provider: huggingface
-          model: "Qwen/Qwen3.5-397B-A17B"
-
       gateway:
         platforms:
           telegram:

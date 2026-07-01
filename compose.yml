@@ -44,8 +44,11 @@ configs:
     content: |
       model:
         provider: openai-api
-        default: gpt-5.5
-
+        default: gpt-5.4-mini
+        
+      fallback_providers:
+        - provider: openai-api
+          model: gpt-5.5
       gateway:
         platforms:
           telegram:

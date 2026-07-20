@@ -4,35 +4,28 @@ services:
     container_name: hermes
     restart: unless-stopped
     command: gateway run
-
     configs:
       - source: hermes_config
         target: /opt/data/config.yaml
-        mode: 0444
-
+        mode: 0444 
     ports:
-      - "8642:8642"   # Gateway API
-      - "9119:9119"   # Dashboard
-
+      - "8642:8642"   # gateway API
+      - "9119:9119"   # dashboard (only reached when HERMES_DASHBOARD=1)
     volumes:
-      - ./hermes_data:/opt/data
-
+      - ../hermes_data:/opt/data
     environment:
       - TZ=Europe/Istanbul
-      # Dashboard
       - HERMES_DASHBOARD=1
-      - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=${HERMES_ADMIN_USER}
-      - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_ADMIN_PASSWORD}
-      - HERMES_DASHBOARD_BASIC_AUTH_SECRET=${HERMES_ADMIN_RAND}
-
-      # Providers
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - HF_TOKEN=${HF_TOKEN}
-
-      # Telegram
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS}
       - TELEGRAM_GROUP_ALLOWED_CHATS=${TELEGRAM_GROUP_ALLOWED_CHATS}
+      - TELEGRAM_ALLOWED_CHATS=${TELEGRAM_ALLOWED_CHATS}
+      - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=${HERMES_ADMIN_USER}
+      - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_ADMIN_PASSWORD}
+      - HERMES_DASHBOARD_BASIC_AUTH_SECRET=${HERMES_ADMIN_RAND}
 
     deploy:
       resources:
@@ -40,16 +33,20 @@ services:
           memory: 4G
           cpus: "2.0"
 
+#volumes:
+#  hermes_data: null
+
 configs:
   hermes_config:
     content: |
       model:
         provider: openai-api
-        default: gpt-5.4-mini
-        
+        default: gpt-5.6-terra
+      
       fallback_providers:
-        - provider: openai-api
-          model: gpt-5.5
+        - provider: openrouter
+          model: openrouter/free
+      
       gateway:
         platforms:
           telegram:
